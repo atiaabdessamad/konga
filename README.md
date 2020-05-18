@@ -91,7 +91,6 @@ Just copy this to `.env` and make necessary changes to it. Note that this
 
 ## Configuration for Cloud Foundry Deployement [dev mode].
 First add a postgres databse instance on your space : 
-There is an example configuration file on the root folder.
 
 ```
 $ cf create-service postgresql-db development konga-db
