@@ -89,6 +89,26 @@ There is an example configuration file on the root folder.
 Just copy this to `.env` and make necessary changes to it. Note that this
 `.env` file is in .gitignore so it won't go to VCS at any point.
 
+## Configuration for Cloud Foundry Deployement [dev mode].
+First add a postgres databse instance on your space : 
+There is an example configuration file on the root folder.
+
+```
+$ cf create-service postgresql-db development konga-db
+```
+Then deploy your konga application 
+
+```
+$ cf push
+```
+You can get your konga application logs by running
+
+```
+$ cf logs konga
+```
+
+The env parameters are specidied in  `cf_start.sh` bash script, so no need for .env configuration. Make sure that your app instance is correctely binded to its database while starting.
+
 ## Environment variables
 These are the general environment variables Konga uses.
 

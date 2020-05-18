@@ -1,0 +1,6 @@
+applications:
+- name: konga
+  buildpack: https://github.com/cloudfoundry/nodejs-buildpack
+  command: ./cf_start.sh
+  services:
+  - konga-db # cf create-service postgresql-db development konga-db
