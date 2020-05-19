@@ -1,6 +1,5 @@
 #!/bin/bash
 
-export PATH=/home/vcap/app/.apt/usr/local/bin/:$PATH
 
 
 # configure postgres
@@ -28,13 +27,3 @@ echo  "test 1 DB_URI : " $DB_URI
 
 # start konga
 npm start
-
-
-echo "PORT : " $PORT
-echo "KONGA_HOOK_TIMEOUT : " $KONGA_HOOK_TIMEOUT
-echo "DB_ADAPTER : " $DB_ADAPTER
-echo "KONGA_LOG_LEVEL : " $KONGA_LOG_LEVEL
-echo "TOKEN_SECRET : " $TOKEN_SECRET
-
-echo  "test 1 DB_URI : " $DB_URI
-
