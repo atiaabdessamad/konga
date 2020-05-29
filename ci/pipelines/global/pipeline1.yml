@@ -104,7 +104,7 @@ jobs:
               body: notification-content/notification_body.txt
 
       
-  - name: deploy dev
+  - name: deploy to CF
     public: true
     plan:
       - get: konga-resource-git  
@@ -126,24 +126,3 @@ jobs:
             params:
               subject: notification-content/notification_subject.txt
               body: notification-content/notification_body.txt
-
-
-  - name: konga-integration-test
-    public: true
-    plan:        
-      - get: konga-resource-git
-        passed: ['deploy dev']
-        trigger: true
-      - task: konga-integration-test
-        file: konga-resource-git/ci/tasks/integration-test/task.yml
-        on_success:
-          do:
-          - task: create-notification-content
-            file: konga-resource-git/ci/tasks/notif/task_notif.yml
-            params:
-              BUILD_STATUS: Successfull
-          - put: notification
-            params:
-              subject: notification-content/notification_subject.txt
-              body: notification-content/notification_body.txt
-

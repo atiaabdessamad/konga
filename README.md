@@ -28,7 +28,7 @@ Special thanks to our supporters that help us keep the project going and the mot
 - [**Used libraries**](#used-libraries)
 - [**Installation**](#installation)
 - [**Configuration**](#configuration)
-- [**Cloud Foundry Deployement**](#configuration-for-cloud-foundry-deployement)
+- [**Cloud Foundry Deployment**](#configuration-for-cloud-foundry-deployment)
 - [**Environment variables**](#environment-variables)
 - [**Running Konga**](#running-konga)
 - [**Upgrading**](#upgrading)
@@ -90,7 +90,7 @@ There is an example configuration file on the root folder.
 Just copy this to `.env` and make necessary changes to it. Note that this
 `.env` file is in .gitignore so it won't go to VCS at any point.
 
-## Configuration for Cloud Foundry Deployement [dev mode]
+## Configuration for Cloud Foundry Deployment
 First add a postgres databse instance on your space : 
 
 ```
