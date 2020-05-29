@@ -1,0 +1,149 @@
+resource_types:
+  - name: cf-cli-resource
+    type: docker-image
+    source:
+      repository: nulldriver/cf-cli-resource
+      tag: latest
+
+  - name: email
+    type: docker-image
+    source:
+      repository: pcfseceng/email-resource
+
+  - name: artifactory    
+    type: docker-image
+    source:
+      repository: pivotalservices/artifactory-resource
+
+
+resources:
+  - name: konga-resource-git
+    type: git
+    source:
+      uri: ((uri))
+      private_key: ((private-key))
+      branch: ((branch))
+
+  - name: konga-dependencies
+    type: artifactory
+    source:
+      endpoint: https://artifactory.apps.eu01.cf.canopy-cloud.com/artifactory
+      repository: "/npm-dependencies"
+      regex: "konga-dependencies-(?<version>.*).zip"
+      username: ((admin_artifact))
+      password: ((password_artifact))
+      skip_ssl_verification: true
+
+  - name: cf-dev
+    type: cf-cli-resource
+    source:
+      api: ((cf_api))
+      username: ((cf_login))
+      password: ((cf_password))
+      org: ((cf_org))
+      space: ((cf_space_dev))
+      skip_cert_check: true
+
+  - name: notification
+    type: email
+    source:
+      smtp:
+        host: smtp.gmail.com
+        port: "587"
+        username: ((email_login))
+        password: ((email_password))
+      from: ((email_login))
+      to: [ ((cf_login)) ]
+
+
+
+jobs:
+  - name: prepare environment
+    public: true
+    plan:
+      - get: konga-resource-git  
+        trigger: true
+      # - put: cf-delete
+      #   resource: cf-dev
+      #   params:
+      #     command: delete
+      #     app_name: konga-dev
+      #     delete_mapped_routes: false
+      # - put: cf-delete-service
+      #   resource: cf-dev
+      #   params:
+      #     command: delete-service
+      #     service_instance: {{cf_service_db_dev_name}}
+      - put: cf-create-service
+        resource: cf-dev
+        params:
+          command: create-service
+          service: {{cf_db_service}}
+          plan: {{cf_db_service_plan}}
+          service_instance: {{cf_service_db_dev_name}}
+
+
+  - name: build
+    public: true
+    plan:
+      - get: konga-dependencies
+      - get: konga-resource-git
+        passed: ['prepare environment']
+        trigger: true
+      - task: build 
+        file: konga-resource-git/ci/tasks/build/task.yml
+        on_failure:
+          do:
+          - task: create-notification-content
+            file: konga-resource-git/ci/tasks/notif/task_notif.yml
+            params:
+              BUILD_STATUS: Failed
+          - put: notification
+            params:
+              subject: notification-content/notification_subject.txt
+              body: notification-content/notification_body.txt
+
+      
+  - name: deploy dev
+    public: true
+    plan:
+      - get: konga-resource-git  
+        trigger: true
+        passed: ['build']    
+      - put: cf-push
+        resource: cf-dev
+        params:
+          command: push
+          manifest: konga-resource-git/manifest.yml
+          path: konga-resource-git
+        on_failure:
+          do:
+          - task: create-notification-content
+            file: konga-resource-git/ci/tasks/notif/task_notif.yml
+            params:
+              BUILD_STATUS: Failed
+          - put: notification
+            params:
+              subject: notification-content/notification_subject.txt
+              body: notification-content/notification_body.txt
+
+
+  - name: konga-integration-test
+    public: true
+    plan:        
+      - get: konga-resource-git
+        passed: ['deploy dev']
+        trigger: true
+      - task: konga-integration-test
+        file: konga-resource-git/ci/tasks/integration-test/task.yml
+        on_success:
+          do:
+          - task: create-notification-content
+            file: konga-resource-git/ci/tasks/notif/task_notif.yml
+            params:
+              BUILD_STATUS: Successfull
+          - put: notification
+            params:
+              subject: notification-content/notification_subject.txt
+              body: notification-content/notification_body.txt
+
